@@ -1,0 +1,211 @@
+const _ = require('underscore');
+const assert = require('assert');
+
+export function part1(input: string[]): any {
+    let data = parseData(input);
+    // data.image.print();
+    let res = calculateNumberOfLitPixels(data, 2);
+    return res;
+}
+
+export function part2(input: string[]): any {
+    let data = parseData(input);
+    let res = calculateNumberOfLitPixels(data, 50);
+    return res;
+}
+
+const LIT_PIXEL = 1;
+const DARK_PIXEL = 0;
+
+function parseData(data: string[]): IData {
+    let algorithm_line = _.map(data[0], (c: string) => c === '#' ? LIT_PIXEL : DARK_PIXEL);
+    let img = new Image();
+
+    let x_off = 1000;
+    let y_off = 1000;
+
+    for (let n = 2; n < data.length; ++n) {
+        for (let i = 0; i < data[n].length; ++i) {
+            const [x, y] = [i + x_off, n + y_off - 2];
+            img.setPixel(x, y, (data[n][i] === '#') ? LIT_PIXEL : DARK_PIXEL, true);
+        }
+    }
+
+    img.addBorder(5);
+
+    return {
+        algorithm: algorithm_line,
+        image: img
+    };
+}
+
+class Image {
+    private img: Map<number, number>;
+    private minx = Number.MAX_SAFE_INTEGER;
+    private miny = Number.MAX_SAFE_INTEGER;
+    private maxx = -Number.MAX_SAFE_INTEGER;
+    private maxy = -Number.MAX_SAFE_INTEGER;
+    private offsetArr: number[][] = [
+        [-1, -1],
+        [0, -1],
+        [1, -1],
+
+        [-1, 0],
+        [0, 0],
+        [1, 0],
+
+        [-1, 1],
+        [0, 1],
+        [1, 1]
+    ];
+    private pows: number[] = [];
+
+    constructor() {
+        this.img = new Map();
+        for (let i = 0; i < 9; i++) {
+            this.pows.push(Math.pow(2, i));
+        }
+    }
+
+    unpackPos(pos: number, unpacked: number[]) {
+        unpacked[0] = Math.floor(pos / 100000);
+        unpacked[1] = Math.floor(pos - unpacked[0]*100000);
+    }
+
+    packPos(x: number, y: number): number {
+        return x*100000 + y;
+    }
+
+    setPixel(x: number, y: number, value: number, updateMinMax = false): void {
+        let key = this.packPos(x, y);
+        this.img.set(key, value);
+        if (updateMinMax) {
+            this.updateMinMax(x, y);
+        }
+    }
+
+    private updateMinMax(x: number, y: number) {
+        this.minx = Math.min(this.minx, x);
+        this.miny = Math.min(this.miny, y);
+        this.maxx = Math.max(this.maxx, x);
+        this.maxy = Math.max(this.maxy, y);
+    }
+
+    print(): void {
+        // // console.log('');
+        for (let y = this.miny; y <= this.maxy; ++y) {
+            let line = '';
+            for (let x = this.minx; x <= this.maxx; ++x) {
+                let key = this.packPos(x, y);
+                let c = '?';
+                if (this.img.has(key)) {
+                    c = this.img.get(key) === LIT_PIXEL ? '#' : '.';
+                    line += c;
+                }
+            }
+            // // console.log(line);
+        }
+    }
+
+    clearBorder(thickness: number): void {
+        let min_x = this.minx + thickness;
+        let min_y = this.miny + thickness;
+        let max_x = this.maxx - thickness;
+        let max_y = this.maxy - thickness;
+        
+        for (let x = min_x - thickness; x <= max_x + thickness; x++) {
+            for (let y = min_y - thickness; y <= max_y + thickness; y++) {
+                if (!((x >= min_x && x <= max_x) && (y >= min_y && y <= max_y))) {
+                    this.setPixel(x, y, DARK_PIXEL, false);
+                }
+            }
+        }
+    }
+
+    addBorder(thickness: number): void {
+        let min_x = this.minx;
+        let min_y = this.miny;
+        let max_x = this.maxx;
+        let max_y = this.maxy;
+
+        for (let x = min_x - thickness; x <= max_x + thickness; x++) {
+            for (let y = min_y - thickness; y <= max_y + thickness; y++) {
+                if ((x >= min_x && x <= max_x) && (y >= min_y && y <= max_y)) {
+
+                } else {
+                    this.setPixel(x, y, DARK_PIXEL, true);
+                }
+            }
+        }
+    }
+
+    setMissingNeighboringPixels(x: number, y: number, value: number): void {
+        _.each(this.offsetArr, (off: number[]) => {
+            let x_off = x + off[0];
+            let y_off = y + off[1];
+            let key = this.packPos(x_off, y_off);
+            
+            if (!this.img.has(key)) {
+                this.setPixel(x_off, y_off, value, true);
+            }
+        });
+    }
+
+    getPixelNeighborhoodNumber(x: number, y: number): number {
+        let number = 0;
+        for (let n = this.offsetArr.length - 1; n >= 0; n--) {
+            let off = this.offsetArr[n];
+            let x_off = off[0];
+            let y_off = off[1];
+            let key = this.packPos(x_off, y_off);
+            if (this.img.has(key)) {
+                let value = this.img.get(key);
+                if (value !== DARK_PIXEL) {
+                    number += this.pows[this.offsetArr.length - n - 1];
+                }
+            }
+        }
+        return number;
+    }
+
+    iterate(cb: (value: number, key: number, map: Map<number, number>) => void): void {
+        this.img.forEach(cb);
+        // this.print();
+    }
+}
+
+function calculateNumberOfLitPixels(data: IData, iterations: number): number {
+    let currentImage = data.image;
+    let nextImage = new Image();
+
+    let posArr = [0, 0];
+
+    for (let iter = 0; iter < iterations; ++iter) {
+        currentImage.iterate((value: number, key: number) => {
+            currentImage.unpackPos(key, posArr);
+            let algNumber = currentImage.getPixelNeighborhoodNumber(posArr[0], posArr[1]);
+            let pixelValue = data.algorithm[algNumber];
+            nextImage.setPixel(posArr[0], posArr[1], pixelValue);
+            nextImage.setMissingNeighboringPixels(posArr[0], posArr[1], DARK_PIXEL);
+        });
+
+        if ((iter % 2) !== 0) nextImage.clearBorder(4);
+        let tmp = currentImage;
+        currentImage = nextImage;
+        nextImage = tmp;
+    }
+
+    let litCount = 0;
+
+    currentImage.clearBorder(5);
+
+    currentImage.iterate((value) => {
+        litCount += (value === LIT_PIXEL) ? 1 : 0
+    });
+    return litCount;
+}
+
+interface IData {
+    algorithm: number[];
+    image: Image;
+}

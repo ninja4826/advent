@@ -1,0 +1,108 @@
+export function part1(input: string[]): any {
+    input = input.map(v => v.split(': ')[1]);
+    let roller = dice(3);
+
+    let players: Player[] = [
+        new Player('Player 1', input[0], roller),
+        new Player('Player 2', input[1], roller)
+    ];
+
+    let lastTurn = 1;
+    let winner: Player;
+    let loser: Player;
+    while (true) {
+        let currTurn = (lastTurn == PTurn.P1 ? PTurn.P2 : PTurn.P1);
+
+        let score = players[currTurn].roll();
+        if (score >= 1000) {
+            winner = players[currTurn];
+            loser = players[lastTurn];
+            break;
+        }
+        lastTurn = currTurn;
+    }
+    let totalRolls = roller.return().value;
+    if (!totalRolls) {
+        throw new Error("generator return should give final count");
+    }
+    let ret = totalRolls[0] * loser.score;
+    
+    return `${totalRolls[0]} * ${loser.score} = ${ret}`;
+}
+
+export function part2(input: string[]): any {
+    
+}
+
+function* dice(num: number) {
+    let i = 1;
+    let k = 0;
+    try {
+        while (true) {
+            let arr: number[] = [];
+            for (let j = 0; j < num; j++) {
+                k++;
+                arr.push(i++);
+                if (i > 100) {
+                    i = 1;
+                }
+            }
+            yield arr;
+        }
+    } finally {
+        yield [ k ];
+    }
+}
+
+enum PTurn {
+    P1,
+    P2
+};
+
+interface IPlayer {
+    name: string;
+    pos: number;
+    score: number;
+    roller: Generator<number[], void, unknown>;
+}
+
+// interface Players {
+//     p1: Player;
+//     p2: Player;
+// }
+
+class Player implements IPlayer {
+    name: string;
+    pos: number;
+    score: number = 0;
+    roller: Generator<number[], void, unknown>;
+
+    constructor(name: string, pos: number | string, roller: Generator<number[], void, unknown>) {
+        if (typeof pos == 'string') {
+            pos = parseInt(pos);
+        }
+        this.name = name;
+        this.pos = pos;
+        this.roller = roller;
+    }
+
+    roll(): number {
+        let roll = this.roller.next().value;
+
+        if (!roll) {
+            throw new Error("something wrong with dice generator.");
+        }
+
+        let spaces = roll.reduce((a, b) => a + b, 0);
+        let newPos = this.pos + spaces;
+        newPos = newPos % 10;
+        if (newPos == 0) {
+            newPos = 10;
+        }
+        this.pos = newPos;
+        this.score += newPos;
+
+        // // // console.log(`${this.name} rolls ${roll.join('+')} and moves to space ${newPos} for a total score of ${this.score}.`);
+        return this.score;
+    }
+}

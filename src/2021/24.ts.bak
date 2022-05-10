@@ -1,0 +1,85 @@
+export function part1(input: string[]): any {
+    let reg = /(\w{3})\s(\w)\s?([\-\w\d]*)/;
+
+    let variables: any = {
+        w: 0,
+        x: 0,
+        y: 0,
+        z: 0
+    };
+
+    let min = parseInt('1'.repeat(14));
+    let max = parseInt('9'.repeat(14));
+    // let max = parseInt('1'.repeat(14));
+
+    for (let i = max; i >= min; i--) {
+    // for (let i = min; i <= max; i++) {
+        let iArr = (i + '').split('').map(c => parseInt(c));
+        if (i % 1000000 == 0) {
+            // // // console.log(i);
+            let minMaxDist = max - min;
+            let dist = max - i;
+            // // console.log(`${i} - ${(dist / minMaxDist) * 100}%`);
+        }
+        if (iArr.includes(0)) {
+            continue;
+        }
+
+        // // // console.log(`Checking: ${i}`);
+        for (let i of input) {
+            let match = matcher(i, reg);
+            
+            let a = variables[match[2]];
+            let b = +match[3];
+            if (isNaN(b)) {
+                // // // console.log('checking var');
+                b = variables[match[3]];
+            }
+
+            // // // console.log('ins: '+match[0]);
+            // // // console.log('a: '+a);
+            // // // console.log('b: '+b);
+
+            switch (match[1]) {
+                case 'inp':
+                    variables[match[2]] = iArr.shift();
+                    break;
+                case 'add':
+                    variables[match[2]] = a + b;
+                    break;
+                case 'mul':
+                    variables[match[2]] = a * b;
+                    break;
+                case 'div':
+                    variables[match[2]] = Math.floor(a / b);
+                    break;
+                case 'mod':
+                    variables[match[2]] = a % b;
+                    break;
+                case 'eql':
+                    variables[match[2]] = (a == b ? 1 : 0);
+                    break;
+            }
+
+            // // // console.log(match[0]);
+            // // // console.log(variables);
+            // break;
+        }
+        // // // console.log(variables);
+        if (variables.z == 0) {
+            // // console.log(variables);
+            return i;
+        }
+    }
+}
+
+export function part2(input: string[]): any {
+    
+}
+
+function matcher(str: string, reg: RegExp): RegExpMatchArray {
+    let _match = str.match(reg);
+    if (!_match) throw new Error("ugh");
+    let match: RegExpMatchArray = _match;
+    return match;
+}

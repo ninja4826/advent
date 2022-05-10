@@ -1,0 +1,272 @@
+export function part1(input: string[]): any {
+    let reg = /target\sarea:\sx=([\-\d\.]{1,10}),\sy=([\-\d\.]{1,10})/;
+    let match = matcher(input[0], reg);
+
+    let xRange = match[1].split('..').map(c => parseInt(c)).sort((a, b) => a - b);
+    let yRange = match[2].split('..').map(c => parseInt(c)).sort((a, b) => b - a);
+
+    // // // console.log(findVel([xRange[0], xRange[1]], [yRange[0], yRange[1]]));
+
+    return findVel([xRange[0], xRange[1]], [yRange[0], yRange[1]])[0];
+}
+
+function matcher(str: string, reg: RegExp): RegExpMatchArray {
+    let _match = str.match(reg);
+    if (!_match) throw new Error("ugh");
+    let match: RegExpMatchArray = _match;
+    return match;
+}
+
+function findVel(tX: [number, number], tY: [number, number]): [number, number] {
+    let xVals: number[] = [];
+    let yVals: number[][] = [];
+    
+    let triNum = (n: number): number => {
+        let total = 0;
+        while (n > 0) {
+            total += n;
+            n -= 1;
+        }
+
+        return total;
+    };
+
+    let calcY = (v: number, s: number): [number, number] => {
+        let pos = 0;
+        let max = 0;
+        for (let i = 0; i < s; i++) {
+            // // // console.log(`pos: ${pos}, v: ${v}`);
+            pos += v;
+            max = Math.max(max, pos);
+            v--;
+        }
+        return [pos, max];
+    };
+
+    for (let i = 1; i < tX[1]; i++) {
+        let num = triNum(i);
+        if (num >= tX[0] && num <= tX[1]) {
+            xVals.push(i);
+        }
+    }
+    for (let x of xVals) {
+        for (let i = 0; i < Math.abs(tY[1]); i++) {
+            let yVal = calcY(i, x)[0];
+            if (yVal < tY[1]) {
+                continue;
+            }
+            let j = 0;
+            while (true) {
+                let jVal = calcY(i, j);
+                // // // console.log(`${i} + ${j} = ${jVal[0]}`);
+                if (jVal[0] <= tY[0] && jVal[0] >= tY[1]) {
+                    yVals.push([i, j]);
+                }
+                j++;
+                if (jVal[0] < tY[1]) {
+                    // // // console.log('too far');
+                    break;
+                }
+            }
+        }
+    }
+
+    let maxVals: number[] = yVals.map(c => calcY(c[0], c[1])[1]);
+    let maxIdx = 0;
+    let maxVal = 0;
+    for (let i = 0; i < maxVals.length; i++) {
+        // let v = calcY(yVals[i][0], yVals[i][1])[1];
+        let v = maxVals[i];
+        if (v > maxVal) {
+            maxVal = v;
+            maxIdx = i;
+        }
+    }
+    return [maxVals[maxIdx], maxIdx];
+}
+
+interface Vector {
+    x: number;
+    y: number;
+}
+
+interface TargetAxis {
+    max: number;
+    min: number;
+}
+
+interface TargetVector {
+    x: TargetAxis;
+    y: TargetAxis;
+}
+
+class Probe {
+    coord: Vector;
+    oldVel: Vector;
+    vel: Vector;
+    target: TargetVector;
+
+    constructor(vel: Vector, target: TargetVector) {
+        this.vel = {
+            x: vel.x,
+            y: vel.y
+        };
+        this.oldVel = vel;
+        this.target = target;
+        this.coord = {
+            x: 0,
+            y: 0
+        };
+    }
+
+    step(): boolean {
+        this.coord.x += this.vel.x;
+        this.coord.y += this.vel.y;
+
+        this.vel.x -= (this.vel.x <= 0 ? 0 : 1);
+        this.vel.y -= 1;
+
+        return this.checkPast;
+    }
+
+    testVel(maxSteps = 100): void {
+        for (let i = 0; i < maxSteps; i++) {
+            let passChar = '❌';
+            if (this.coord.x <= this.target.x.max && this.coord.x >= this.target.x.min) {
+                if (this.coord.y <= this.target.y.max && this.coord.y >= this.target.y.min) {
+                    passChar = '✅';
+                }
+            }
+            // // console.log(`${i} [${passChar}]: (${this.coord.x},${this.coord.y})`);
+            this.step();
+        }
+    }
+
+    get checkPast(): boolean {
+        return this.coord.x > this.target.x.max || this.coord.y < this.target.y.min;
+    }
+
+    get inBounds(): boolean {
+        if (this.coord.x > this.target.x.max || this.coord.x < this.target.x.min) {
+            return false;
+        }
+
+        if (this.coord.y > this.target.y.max || this.coord.y < this.target.y.min) {
+            return false;
+        }
+
+        return true;
+    }
+
+    static triNum(n: number): [ number, number ] {
+        let total = 0;
+        let steps = 0;
+        while (n > 0) {
+            total += n;
+            n -= 1;
+            steps += 1;
+        }
+        return [total, steps];
+    }
+
+    static preCheck(vel: Vector, target: TargetVector): boolean {
+        
+        
+        let ret = true;
+
+        let [ tri, triSteps ] = this.triNum(vel.x);
+
+        if (tri < target.x.min) {
+            ret = false;
+        }
+
+
+
+        return ret;
+    }
+}
+
+export function part2(input: string[]): any {
+    let reg = /target\sarea:\sx=([\-\d\.]{1,10}),\sy=([\-\d\.]{1,10})/;
+    let match = matcher(input[0], reg);
+
+    let xRange = match[1].split('..').map(c => parseInt(c)).sort((a, b) => a - b);
+    let yRange = match[2].split('..').map(c => parseInt(c)).sort((a, b) => a - b);
+
+    let target = {
+        x: {
+            min: xRange[0],
+            max: xRange[1]
+        },
+        y: {
+            min: yRange[0],
+            max: yRange[1]
+        }
+    };
+
+    let maxX = target.x.max;
+    let minX = 1;
+
+    while (true) {
+        let [tri,] = Probe.triNum(minX);
+        if (tri > target.x.min) {
+            break;
+        }
+        minX += 1;
+    }
+
+    let [,maxY] = findVel([target.x.min, target.x.max], [target.y.max, target.y.min]);
+    let minY = target.y.min;
+
+    // // console.log('minX:', minX);
+    // // console.log('maxX:', maxX);
+    // // console.log('minY:', minY);
+    // // console.log('maxY:', maxY);
+    let velocities: Vector[] = [];
+    for (let x = minX; x <= maxX; x++) {
+        for (let y = minY; y <= maxY; y++) {
+            let vel = { x: x, y: y };
+            // // // console.log('vel:',vel);
+            let probe = new Probe(vel, target);
+
+            while (true) {
+                probe.step();
+                if (probe.checkPast) {
+                    break;
+                }
+                if (probe.inBounds) {
+                    // // // console.log('new vel?', vel);
+                    velocities.push(vel);
+                    break;
+                }
+            }
+        }
+    }
+    // // // console.log(zSort[0]);
+    // testProbe.testVel();
+
+    // for (let z of zSort) {
+    //     // // console.log(`${z.x},${z.y}`);
+    // }
+    
+    // let step = (coord: Vector, vel: Vector): [Vector, Vector] => {
+    //     coord.x += vel.x;
+    //     coord.y += vel.y;
+        
+    //     vel.x -= (vel.x <= 0 ? 0 : 1);
+    //     vel.y -= 1;
+
+    //     return [ coord, vel ];
+    // };
+
+    // let checkPast = (coord: Vector, target: TargetVector): boolean => coord.x > target.x.max || coord.y < target.y.min;
+    // // // console.log(velocities[0]);
+    let arr = velocities.map(v => [v.x,v.y]).sort((a, b) => {
+        if (a[0] == b[0]) {
+            return a[1] - b[1];
+        }
+        return a[0] - b[0];
+    });
+    // // // console.log(JSON.stringify(arr));
+    return velocities.length;
+}

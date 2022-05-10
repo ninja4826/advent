@@ -1,0 +1,145 @@
+export function part1(input: string[]): any {
+    const inReg = /o(n|f)f*\sx=([\-0-9]{1,10}..[\-0-9]{1,10}),y=([\-0-9]{1,10}..[\-0-9]{1,10}),z=([\-0-9]{1,10}..[\-0-9]{1,10})/;
+
+    // // // console.log(matcher(input[0], inReg));
+    // return;
+
+    let reactor = new Reactor();
+
+    for (let i of input) {
+        let match = matcher(i, inReg);
+
+        let enabled: boolean = match[1] == 'n';
+        let xArr: number[] = match[2].split('..').map(x => parseInt(x));
+        let yArr: number[] = match[3].split('..').map(y => parseInt(y));
+        let zArr: number[] = match[4].split('..').map(z => parseInt(z));
+
+        let xRange: [ number, number ] = [ xArr[0], xArr[1] ];
+        let yRange: [ number, number ] = [ yArr[0], yArr[1] ];
+        let zRange: [ number, number ] = [ zArr[0], zArr[1] ];
+
+        reactor.markCube(enabled, xRange, yRange, zRange);
+    }
+
+    return reactor.count();
+}
+
+export function part2(input: string[]): any {
+    const inReg = /o(n|f)f*\sx=([\-0-9]{1,10}..[\-0-9]{1,10}),y=([\-0-9]{1,10}..[\-0-9]{1,10}),z=([\-0-9]{1,10}..[\-0-9]{1,10})/;
+    // return;
+    let min = -50;
+    let max = 50;
+
+    for (let i of input) {
+        let match = matcher(i, inReg);
+
+        let nums = [];
+
+        nums.push(...match[2].split('..').map(x => parseInt(x)));
+        nums.push(...match[3].split('..').map(y => parseInt(y)));
+        nums.push(...match[4].split('..').map(z => parseInt(z)));
+
+        // // // console.log(nums);
+
+        min = Math.min(min, ...nums);
+        max = Math.max(max, ...nums);
+    }
+
+    let reactor = new Reactor(min, max);
+
+    for (let i of input) {
+        let match = matcher(i, inReg);
+
+        let enabled: boolean = match[1] == 'n';
+        let xArr: number[] = match[2].split('..').map(x => parseInt(x));
+        let yArr: number[] = match[3].split('..').map(y => parseInt(y));
+        let zArr: number[] = match[4].split('..').map(z => parseInt(z));
+
+        let xRange: [ number, number ] = [ xArr[0], xArr[1] ];
+        let yRange: [ number, number ] = [ yArr[0], yArr[1] ];
+        let zRange: [ number, number ] = [ zArr[0], zArr[1] ];
+
+        reactor.markCube(enabled, xRange, yRange, zRange);
+    }
+
+    return reactor.count();
+
+    
+}
+
+function matcher(str: string, reg: RegExp): RegExpMatchArray {
+    let _match = str.match(reg);
+    if (!_match) throw new Error("ugh");
+    let match: RegExpMatchArray = _match;
+    return match;
+}
+
+class Reactor {
+    map: any = {};
+    min: number;
+    max: number;
+
+    constructor(min: number = -50, max: number = 50) {
+        let xObj: any = {};
+        for (let i = min; i <= max; i++) {
+            let yObj: any = {};
+            for (let j = min; j <= max; j++) {
+                let zObj: any = {};
+                for (let k = min; k <= max; k++) {
+                    zObj[k] = 0;
+                }
+                yObj[j] = zObj;
+            }
+            xObj[i] = yObj;
+        }
+        this.min = min;
+        this.max = max;
+        this.map = xObj;
+    }
+    
+    // markCube(enabled: boolean, x1: number, x2: number, y1: number, y2: number, z1: number, z2: number) {
+    markCube(enabled: boolean, xRange: [number, number], yRange: [number, number], zRange: [number, number]) {
+        let [ x1, x2 ] = xRange;
+        let [ y1, y2 ] = yRange;
+        let [ z1, z2 ] = zRange;
+        if (x1 < this.min) x1 = this.min - 1;
+        if (x2 < this.min) x2 = this.min - 1;
+        if (y1 < this.min) y1 = this.min - 1;
+        if (y2 < this.min) y2 = this.min - 1;
+        if (z1 < this.min) z1 = this.min - 1;
+        if (z2 < this.min) z2 = this.min - 1;
+
+        if (x1 > this.max) x1 = this.max + 1;
+        if (x2 > this.max) x2 = this.max + 1;
+        if (y1 > this.max) y1 = this.max + 1;
+        if (y2 > this.max) y2 = this.max + 1;
+        if (z1 > this.max) z1 = this.max + 1;
+        if (z2 > this.max) z2 = this.max + 1;
+
+        for (let x = x1; x <= x2; x++) {
+            if (x > this.max || x < this.min) continue;
+            for (let y = y1; y <= y2; y++) {
+                if (y > this.max || y < this.min) continue;
+                for (let z = z1; z <= z2; z++) {
+                    if (z > this.max || z < this.min) continue;
+                    this.map[x][y][z] = (enabled ? 1 : 0);
+                }
+            }
+        }
+    }
+
+    count(): number {
+        let count = 0;
+        for (let i = -50; i <= 50; i++) {
+            for (let j = -50; j <= 50; j++) {
+                for (let k = -50; k <= 50; k++) {
+                    if (this.map[i][j][k] == 1) {
+                        count++;
+                    } 
+                }
+            }
+        }
+
+        return count;
+    }
+}
