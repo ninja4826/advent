@@ -5,6 +5,7 @@ import { AocClient, transforms } from 'advent-of-code-client';
 const emojic = require('emojic');
 const config = require('config');
 import { logger } from './util';
+import { numbers } from 'advent-of-code-client/dist/util/transforms';
 
 type Result = number | string;
 type PartFn = (input: any) => Result;
@@ -59,7 +60,14 @@ program.command('run')
                 data = transforms.lines(data);
             }
 
-            let answer = func(data);
+            var answer: any;
+
+            if (func.constructor.name === 'AsyncFunction') {
+                answer = await func(data);
+            } else {
+                answer = func(data);
+            }
+
             if ('testAnswers' in script) {
                 const dAnswer = script.testAnswers['part'+pNum];
                 if (dAnswer == answer) {
@@ -133,8 +141,34 @@ program.command('cookie')
     .description('Set browser cookie')
     .argument('<session>', 'session cookie from https://adventofcode.com/')
     .action((session: string) => {
-        let obj = { session };
-        fs.writeFileSync('./config/default.json', JSON.stringify(obj, null, 2));
+        let json = require('./config/default.json');
+        json.session = session;
+        fs.writeFileSync('./config/default.json', JSON.stringify(json, null, 2));
+    });
+
+program.command('year')
+    .description('Set the current working year')
+    .argument('<year>', 'year to be set to')
+    .action((year: string) => {
+        let json = require('./config/default.json');
+        json.year = Number(year);
+        fs.writeFileSync('./config/default.json', JSON.stringify(json, null, 2));
+    });
+
+program.command('dl')
+    .description('Download inputs for specified year')
+    .action(async () => {
+        fs.mkdirSync(`./src/${year}/inputs`, { recursive: true });
+        for (let i = 1; i <= 25; i++) {
+            let client = new AocClient({
+                year: Number(year),
+                day: i,
+                token: config.get('session')
+            });
+            client.setInputTransform((d: any) => d);
+            fs.writeFileSync(`./src/${year}/inputs/${i}.txt`, <string>(await client.getInput()));
+        }
+        process.exit(0);
     });
 
 program.parse();
