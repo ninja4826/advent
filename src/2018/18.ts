@@ -1,12 +1,37 @@
 import { transforms } from 'advent-of-code-client';
 import { logger, matcher, progBar } from '../util';
 
-export function part1(input: any): number | string {
-    return 0;
+export function part1(input: string[]): number | string {
+    let forest = new Forest(input);
+
+    for (let i = 0; i < 10; i++) {
+        forest.spendMinute();
+    }
+
+    return forest.value();
 }
 
 export function part2(input: any): number | string {
-    return 0;
+    let forest = new Forest(input);
+
+    let states: string[] = [];
+    let cycle: number | undefined = undefined;
+    for (let i = 0; i < 1000000000; i++) {
+        forest.spendMinute();
+        let fs = forest.toString();
+
+        let sameState = states.indexOf(fs);
+
+        if (cycle === undefined && sameState != -1) {
+            delete states[i];
+            cycle = i - sameState;
+            i = (i + cycle * Math.floor((1000000000 - 1 - i) / cycle));
+        } else {
+            states[i] = fs;
+        }
+    }
+
+    return forest.value();
 }
 
 class Forest {
@@ -14,8 +39,8 @@ class Forest {
     height: number;
     width: number;
 
-    constructor(mapString: string) {
-        this.map = mapString.split('\n').map(l => l.split(''));
+    constructor(mapString: string[]) {
+        this.map = mapString.map(l => l.split(''));
         this.height = this.map.length;
         this.width = this.map[0].length;
     }
@@ -26,9 +51,9 @@ class Forest {
             for (let x = ox - 1; x <= ox + 1; x++) {
                 if (y == oy && x == ox) continue;
 
-                if (this.map[y] !== null) {
+                if (this.map[y] != null) {
                     const symbol = this.map[y][x];
-                    if (symbol !== null) {
+                    if (symbol != null) {
                         surrounding[symbol] = (surrounding[symbol] || 0) + 1;
                     }
                 }
@@ -91,7 +116,16 @@ class Forest {
 const transform = transforms.lines;
 
 const testData = {
-    part1: ``,
+    part1: `.#.#...|#.
+.....#|##|
+.|..|...#.
+..|#.....#
+#.#|||#|#|
+...#.||...
+.|....|...
+||...#|.#|
+|.||||..|.
+...#.|..|.`,
     part2: ``
 };
 
