@@ -158,6 +158,7 @@ program.command('new')
         // fs.writeFileSync(`./src/days/${day}.ts`, `import { transforms } from 'advent-of-code-client';\nimport { logger } from '../util';\n\nexport function part1(input: any): number | string {\n    return 0;\n}\n\nexport function part2(input: any): number | string {\n    return 0;\n}\n\nconst transform = transforms.lines;\n\nconst testData = {\n    part1: \`\`,\n    part2: \`\`\n};\n\nconst testAnswers = {\n    part1: 0,\n    part2: 0\n};\n\nexport { transform, testData, testAnswers };`);
         let str = fs.readFileSync('./day.ts.template', { encoding: 'utf-8' });
         fs.writeFileSync(`./src/${year}/${day}.ts`, str);
+        execSync('npm run build');
         process.exit();
     });
 
