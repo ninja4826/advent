@@ -1,4 +1,5 @@
 import * as fs from 'fs';
+import * as util from 'util';
 import { execSync } from 'child_process';
 import { Command, Option } from 'commander';
 import { AocClient, transforms } from 'advent-of-code-client';
@@ -6,6 +7,8 @@ const emojic = require('emojic');
 const config = require('config');
 import { logger } from './util';
 import { numbers } from 'advent-of-code-client/dist/util/transforms';
+
+const stat = util.promisify(fs.stat);
 
 type Result = number | string;
 type PartFn = (input: any) => Result;
@@ -32,7 +35,16 @@ program.command('run')
     .action(async (day: any, opts: any) => {
 
         if ('build' in opts && opts.build) {
-            execSync('npm run build');
+            let srcFile = `./src/${year}/${day}.ts`;
+            let outFile = `./dist/${year}/${day}.js`;
+
+            let srcStat = await stat(srcFile);
+            let outStat = await stat(outFile);
+
+            if (srcStat.mtimeMs > outStat.mtimeMs) {
+                execSync('npm run build');
+            }
+            // execSync('npm run build');
         }
         const client = new AocClient({
             year: Number(year),
