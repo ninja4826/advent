@@ -55,41 +55,53 @@ program.command('run')
         // const script = require('./days/'+day);
         const script = require(`./${year}/${day}`);
 
-        let runner = async (func: PartFn, pNum: number, remote = false, data: any = undefined) => {
-            if (data === undefined) {
+        let runner = async (func: PartFn, pNum: number, remote = false, data: any[] = []) => {
+            if (data.length === 0) {
                 if ('testData' in script && !remote) {
+                    if (!Array.isArray(script.testData.part1)) {
+                        script.testData.part1 = [script.testData.part1];
+                    }
                     if (script.testData.part2 == '') {
                         script.testData.part2 = script.testData.part1;
                     }
+                    if (!Array.isArray(script.testData.part2)) {
+                        script.testData.part2 = [script.testData.part2];
+                    }
                     data = script.testData['part'+pNum];
                 } else {
-                    data = await client.getInput();
+                    data = [await client.getInput()];
                 }
             }
             if ('transform' in script) {
-                data = script.transform(data);
+                data = data.map(d => script.transform(d));
             } else {
-                data = transforms.lines(data);
+                data = data.map(d => transforms.lines(d));
             }
 
             var answer: any;
 
             if (func.constructor.name === 'AsyncFunction') {
-                answer = await func(data);
-            } else {
-                answer = func(data);
-            }
-
-            if ('testAnswers' in script) {
-                const dAnswer = script.testAnswers['part'+pNum];
-                if (dAnswer == answer) {
-                    logger.success('Answer success:', answer);
-                } else {
-                    logger.fail('Answer success:', answer);
+                for (let d of data) {
+                    answer = await func(d);
+                    logger.success('Answer:', answer);
                 }
             } else {
-                logger.success('Answer:', answer);
+                for (let d of data) {
+                    answer = func(d);
+                    logger.success('Answer:', answer);
+                }
             }
+
+            // if ('testAnswers' in script) {
+            //     const dAnswer = script.testAnswers['part'+pNum];
+            //     if (dAnswer == answer) {
+            //         logger.success('Answer success:', answer);
+            //     } else {
+            //         logger.fail('Answer success:', answer);
+            //     }
+            // } else {
+            //     logger.success('Answer:', answer);
+            // }
             
         };
 
