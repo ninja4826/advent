@@ -13,7 +13,12 @@ const stat = util.promisify(fs.stat);
 type Result = number | string;
 type PartFn = (input: any) => Result;
 
-const year = config.get('year');
+let year = '';
+if (config.has('year')) {
+    year = config.get('year');
+} else {
+    year = new Date().getFullYear().toString();
+}
 
 const program = new Command();
 
@@ -44,7 +49,6 @@ program.command('run')
             if (srcStat.mtimeMs > outStat.mtimeMs) {
                 execSync('npm run build');
             }
-            // execSync('npm run build');
         }
         const client = new AocClient({
             year: Number(year),
@@ -91,17 +95,6 @@ program.command('run')
                     logger.success('Answer:', answer);
                 }
             }
-
-            // if ('testAnswers' in script) {
-            //     const dAnswer = script.testAnswers['part'+pNum];
-            //     if (dAnswer == answer) {
-            //         logger.success('Answer success:', answer);
-            //     } else {
-            //         logger.fail('Answer success:', answer);
-            //     }
-            // } else {
-            //     logger.success('Answer:', answer);
-            // }
             
         };
 
@@ -136,9 +129,7 @@ program.command('run')
                     doPart1 = true;
                     doPart2 = true;
                 }
-                // if (script.testData.part2 == '') {
-                //     script.testData.part2 = script.testData.part1;
-                // }
+
                 if (doPart1) {
                     await runner(script.part1, 1);
                 }
@@ -155,7 +146,6 @@ program.command('new')
     .description('Creates a new day source file in ./src/days')
     .argument('<day>', 'day to create')
     .action((day: string) => {
-        // fs.writeFileSync(`./src/days/${day}.ts`, `import { transforms } from 'advent-of-code-client';\nimport { logger } from '../util';\n\nexport function part1(input: any): number | string {\n    return 0;\n}\n\nexport function part2(input: any): number | string {\n    return 0;\n}\n\nconst transform = transforms.lines;\n\nconst testData = {\n    part1: \`\`,\n    part2: \`\`\n};\n\nconst testAnswers = {\n    part1: 0,\n    part2: 0\n};\n\nexport { transform, testData, testAnswers };`);
         let str = fs.readFileSync('./day.ts.template', { encoding: 'utf-8' });
         fs.writeFileSync(`./src/${year}/${day}.ts`, str);
         execSync('npm run build');
@@ -166,7 +156,7 @@ program.command('cookie')
     .description('Set browser cookie')
     .argument('<session>', 'session cookie from https://adventofcode.com/')
     .action((session: string) => {
-        let json = require('./config/default.json');
+        let json = require('../config/default.json');
         json.session = session;
         fs.writeFileSync('./config/default.json', JSON.stringify(json, null, 2));
     });
@@ -175,7 +165,7 @@ program.command('year')
     .description('Set the current working year')
     .argument('<year>', 'year to be set to')
     .action((year: string) => {
-        let json = require('./config/default.json');
+        let json = require('../config/default.json');
         json.year = Number(year);
         fs.writeFileSync('./config/default.json', JSON.stringify(json, null, 2));
     });

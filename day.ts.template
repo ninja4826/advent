@@ -12,8 +12,8 @@ export function part2(input: any): number | string {
 const transform = transforms.lines;
 
 const testData = {
-    part1: ``,
-    part2: ``
+    part1: [``],
+    part2: [``]
 };
 
 const testAnswers = {

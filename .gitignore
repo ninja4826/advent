@@ -105,7 +105,8 @@ dist
 
 dist/
 
-config/
+config/*
+!config/default.json
 
 package-lock.json
 
