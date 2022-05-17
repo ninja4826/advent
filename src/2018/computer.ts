@@ -34,7 +34,7 @@ export class Computer {
         };
     }
 
-    execute(_instructions: string[][]) {
+    execute(_instructions: string[][]): number {
         let instructions = _instructions.slice();
 
         let breakPoint = null;
@@ -63,11 +63,12 @@ export class Computer {
 
             code[i][0].apply(this, [code[i][1][0], code[i][1][1], code[i][1][2]]);
             this.state[this.ip]++;
-
+            n++;
             if (breakPoint === i) {
                 break;
             }
         }
+        return n;
     }
 
     toString(): string {
