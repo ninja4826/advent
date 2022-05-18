@@ -1,7 +1,13 @@
 export * from './logger';
 export * from './intcode';
 
-export function matcher(str: string, reg: RegExp): RealRegExpMatchArray {
+export function matcher(str: string, _reg: RegExp | string): RealRegExpMatchArray {
+    let reg: RegExp;
+    if (typeof _reg === 'string') {
+        reg = new RegExp(_reg);
+    } else {
+        reg = _reg;
+    }
     let match = <RegExpMatchArray>str.match(reg);
     match.groups = match.groups || {};
     return <RealRegExpMatchArray>match;
