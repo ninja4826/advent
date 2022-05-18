@@ -159,6 +159,7 @@ program.command('cookie')
         let json = require('../config/default.json');
         json.session = session;
         fs.writeFileSync('./config/default.json', JSON.stringify(json, null, 2));
+        process.exit();
     });
 
 program.command('year')
@@ -168,6 +169,7 @@ program.command('year')
         let json = require('../config/default.json');
         json.year = Number(year);
         fs.writeFileSync('./config/default.json', JSON.stringify(json, null, 2));
+        process.exit();
     });
 
 program.command('dl')
