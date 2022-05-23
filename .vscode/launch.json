@@ -15,7 +15,7 @@
             "outFiles": [
                 "${workspaceFolder}/**/*.js"
             ],
-            "args": ["run", "24", "--part", "2"]
+            "args": ["run", "7", "--part", "2"]
         }
     ]
 }
