@@ -110,3 +110,5 @@ config/*
 package-lock.json
 
 src/*/inputs/
+
+desc/*

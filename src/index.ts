@@ -6,7 +6,8 @@ import { AocClient, transforms } from 'advent-of-code-client';
 const emojic = require('emojic');
 const config = require('config');
 import { logger } from './util';
-import { numbers } from 'advent-of-code-client/dist/util/transforms';
+const gulp = require('gulp');
+const gulpScripts = require('../gulpfile');
 
 const stat = util.promisify(fs.stat);
 
@@ -40,15 +41,17 @@ program.command('run')
     .action(async (day: any, opts: any) => {
 
         if ('build' in opts && opts.build) {
-            let srcFile = `./src/${year}/${day}.ts`;
-            let outFile = `./dist/${year}/${day}.js`;
+            // let srcFile = `./src/${year}/${day}.ts`;
+            // let outFile = `./dist/${year}/${day}.js`;
 
-            let srcStat = await stat(srcFile);
-            let outStat = await stat(outFile);
+            // let srcStat = await stat(srcFile);
+            // let outStat = await stat(outFile);
 
-            if (srcStat.mtimeMs > outStat.mtimeMs) {
-                execSync('npm run build');
-            }
+            // if (srcStat.mtimeMs > outStat.mtimeMs) {
+            //     execSync('npm run build');
+            // }
+            // gulp.series(gulpScripts.tsFiles);
+            // gulpScripts.tsFiles();
         }
         const client = new AocClient({
             year: Number(year),
@@ -110,7 +113,7 @@ program.command('run')
                     doPart2 = true;
                 }
                 // let input = await client.getInput();
-                logger.log('should get input');
+                // logger.log('should get input');
                 if (doPart1) {
                     // await client.run([script.part1], false);
                     await runner(script.part1, 1, true);
@@ -176,15 +179,18 @@ program.command('dl')
     .description('Download inputs for specified year')
     .action(async () => {
         fs.mkdirSync(`./src/${year}/inputs`, { recursive: true });
+        let session = config.get('session');
         for (let i = 1; i <= 25; i++) {
             let client = new AocClient({
                 year: Number(year),
                 day: i,
-                token: config.get('session')
+                token: session
             });
             client.setInputTransform((d: any) => d);
             fs.writeFileSync(`./src/${year}/inputs/${i}.txt`, <string>(await client.getInput()));
         }
+        fs.mkdirSync(`./desc/${year}`);
+        execSync(`npx advent-cli --year ${year} --session ${session} ./desc/${year}`);
         process.exit(0);
     });
 

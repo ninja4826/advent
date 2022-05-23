@@ -8,8 +8,16 @@ export function matcher(str: string, _reg: RegExp | string): RealRegExpMatchArra
     } else {
         reg = _reg;
     }
-    let match = <RegExpMatchArray>str.match(reg);
-    match.groups = match.groups || {};
+    let match = str.match(reg);
+    if (match == null) {
+        match = [];
+        match.index = -1;
+        match.input = str;
+    }
+    if (!('groups' in match)) {
+        let groups: { [key: string]: string } = {};
+        match.groups = groups;
+    } 
     return <RealRegExpMatchArray>match;
 }
 
