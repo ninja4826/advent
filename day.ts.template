@@ -10,6 +10,7 @@ export function part2(input: any): number | string {
 }
 
 const transform = transforms.lines;
+// const transform = (d: string): string => d;
 
 const testData = {
     part1: [``],

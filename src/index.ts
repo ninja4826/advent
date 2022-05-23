@@ -150,6 +150,9 @@ program.command('new')
     .argument('<day>', 'day to create')
     .action((day: string) => {
         let str = fs.readFileSync('./day.ts.template', { encoding: 'utf-8' });
+        if (!fs.existsSync(`./src/${year}`)) {
+            fs.mkdirSync(`./src/${year}`);
+        }
         fs.writeFileSync(`./src/${year}/${day}.ts`, str);
         execSync('npm run build');
         process.exit();

@@ -7,6 +7,7 @@ const fs = require('fs');
 const { execSync } = require('child_process');
 const del = require('del');
 const config = require('config');
+const { deserialize } = require('v8');
 
 function build() {
     return tsProject
@@ -48,15 +49,19 @@ function watch() {
     }
 }
 
-function desc() {
-    let year = config.get('year');
-    let session = config.get('session');
-    execSync(`npx advent-cli --year ${year} --session ${session} ./desc/${year}`);
-    return;
+function descDL() {
+    return new Promise((res, rej) => {
+        let year = config.get('year');
+        let session = config.get('session');
+        fs.mkdirSync(`./desc/${year}`);
+        execSync(`npx advent-cli --year ${year} --session ${session} ./desc/${year}`);
+        res();
+    }).then(del('desc/**/input.txt'));
 }
 
 function cleanDesc() {
-    return del('desc/**/*.txt');
+    let year = config.get('year');
+    return del(`desc/${year}`);
 }
 
 function watchRun() {
@@ -71,7 +76,7 @@ var bd = gulp.series(build);
 exports.build = build;
 exports.runner = runner;
 exports.watch = watch;
-exports.desc = desc;
+exports.desc = gulp.series(cleanDesc, descDL);
 exports.cleanDesc = cleanDesc;
 
 exports.default = bd;
