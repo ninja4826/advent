@@ -108,7 +108,7 @@ export function part2(_input: string[]): number | string {
         if (check) {
             registers.set(regKey, <number>registers.get(regKey) + (incNum * inc));
         }
-        max = Math.max(max, ...[...registers.values()]);
+        max = Math.max(max, ...registers.values());
     }
     return max;
 }
