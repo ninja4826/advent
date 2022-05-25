@@ -56,7 +56,8 @@ function descDL() {
         fs.mkdirSync(`./desc/${year}`);
         execSync(`npx advent-cli --year ${year} --session ${session} ./desc/${year}`);
         res();
-    }).then(del('desc/**/input.txt'));
+    })
+    .then(del('desc/**/input.txt'));
 }
 
 function cleanDesc() {
