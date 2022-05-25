@@ -15,7 +15,13 @@
             "outFiles": [
                 "${workspaceFolder}/**/*.js"
             ],
-            "args": ["run", "7", "--part", "2"]
+            "args": ["run", "18", "--part", "2", "--remote"]
+        },
+        {
+            "name": "Test Python",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}\\src\\2017\\18.py"
         }
     ]
 }
