@@ -89,12 +89,20 @@ program.command('run')
 
             if (func.constructor.name === 'AsyncFunction') {
                 for (let d of data) {
+                    if (remote) {
+                        logger.disable();
+                    }
                     answer = await func(d);
+                    logger.enable();
                     logger.success('Answer:', answer);
                 }
             } else {
                 for (let d of data) {
+                    if (remote) {
+                        logger.disable();
+                    }
                     answer = func(d);
+                    logger.enable();
                     logger.success('Answer:', answer);
                 }
             }
