@@ -11,6 +11,7 @@ def clean_up(instructions):
             result.append((first, int(instr[1:])))
         elif first == 'x':
             a, b = map(int, instr[1:].split('/'))
+            result.append((first, a, b))
         else:
             result.append((first, instr[1], instr[-1]))
     return result
