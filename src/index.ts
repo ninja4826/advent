@@ -6,6 +6,7 @@ import { AocClient, transforms } from 'advent-of-code-client';
 const emojic = require('emojic');
 const config = require('config');
 import { logger } from './util';
+import path from 'path';
 const gulp = require('gulp');
 const gulpScripts = require('../gulpfile');
 
@@ -180,9 +181,11 @@ program.command('year')
     .description('Set the current working year')
     .argument('<year>', 'year to be set to')
     .action((year: string) => {
-        let json = require('../config/default.json');
+        let target = path.basename(<string>config.util.getConfigSources().filter((s: any) => path.basename(s.name) !== 'default.json')[0].name);
+        // let json = require('../config/default.json');
+        let json = require(`../config/${target}`);
         json.year = Number(year);
-        fs.writeFileSync('./config/default.json', JSON.stringify(json, null, 2));
+        fs.writeFileSync(`./config/${target}`, JSON.stringify(json, null, 2));
         process.exit();
     });
 
@@ -200,8 +203,24 @@ program.command('dl')
             client.setInputTransform((d: any) => d);
             fs.writeFileSync(`./src/${year}/inputs/${i}.txt`, <string>(await client.getInput()));
         }
-        fs.mkdirSync(`./desc/${year}`);
-        execSync(`npx advent-cli --year ${year} --session ${session} ./desc/${year}`);
+        // fs.mkdirSync(`./desc/${year}`);
+        // execSync(`npx advent-cli --year ${year} --session ${session} ./desc/${year}`);
+        process.exit(0);
+    });
+
+program.command('ans')
+    .description('Submit an answer for a specified day')
+    .argument('<day>', 'day to submit')
+    .argument('<part>', 'part to submit')
+    .argument('<answer>', 'answer to submit')
+    .action(async (day: any, part: any, answer: any) => {
+        const client = new AocClient({
+            year: Number(year),
+            day: Number(day),
+            token: config.get('session')
+        });
+
+        await client.submit(+part, answer);
         process.exit(0);
     });
 
