@@ -210,17 +210,26 @@ program.command('dl')
 
 program.command('ans')
     .description('Submit an answer for a specified day')
-    .argument('<day>', 'day to submit')
-    .argument('<part>', 'part to submit')
-    .argument('<answer>', 'answer to submit')
-    .action(async (day: any, part: any, answer: any) => {
+    // .argument('<day>', 'day to submit')
+    // .argument('<part>', 'part to submit')
+    // .argument('<answer>', 'answer to submit')
+    .requiredOption('-d, --day <number>', 'day to submit')
+    .requiredOption('-p, --part <number>', 'part to submit')
+    .requiredOption('-a, --answer <string | number>', 'answer to submit')
+    .action(async (opts: any) => {
         const client = new AocClient({
             year: Number(year),
-            day: Number(day),
+            day: Number(opts.day),
             token: config.get('session')
         });
 
-        await client.submit(+part, answer);
+        let res = await client.submit(+opts.part, opts.answer);
+
+        if (res) {
+            logger.success(`Part ${opts.part} completed!`);
+        } else {
+            logger.fail(`Part ${opts.part} failed :(`);
+        }
         process.exit(0);
     });
 
