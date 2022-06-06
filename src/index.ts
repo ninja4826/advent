@@ -227,6 +227,9 @@ program.command('ans')
 
         if (res) {
             logger.success(`Part ${opts.part} completed!`);
+            if (opts.part == '1') {
+                execSync('gulp desc');
+            }
         } else {
             logger.fail(`Part ${opts.part} failed :(`);
         }
