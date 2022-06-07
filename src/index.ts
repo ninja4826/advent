@@ -5,12 +5,15 @@ import { Command, Option } from 'commander';
 import { AocClient, transforms } from 'advent-of-code-client';
 const emojic = require('emojic');
 const config = require('config');
-import { logger } from './util';
+import { logger, range } from './util';
 import path from 'path';
-const gulp = require('gulp');
-const gulpScripts = require('../gulpfile');
+import { load as $load } from 'cheerio';
+import axios from 'axios';
+
+const TurndownService = require('turndown');
 
 const stat = util.promisify(fs.stat);
+const writeFile = util.promisify(fs.writeFile);
 
 type Result = number | string;
 type PartFn = (input: any) => Result;
@@ -228,11 +231,59 @@ program.command('ans')
         if (res) {
             logger.success(`Part ${opts.part} completed!`);
             if (opts.part == '1') {
-                execSync('gulp desc');
+                // execSync('gulp desc');
+                downloadDesc(opts.day);
             }
         } else {
             logger.fail(`Part ${opts.part} failed :(`);
         }
+        process.exit(0);
+    });
+
+async function downloadDesc(day: number): Promise<void> {
+    const BASE_URL = 'https://adventofcode.com';
+    const YEAR = config.get('year');
+    const DAYS_DIR = path.resolve(__dirname, '..', 'desc', ''+YEAR);
+    const turndownService = new TurndownService();
+    
+    const url = `${BASE_URL}/${YEAR}/day/${day}`;
+    
+    const { data: descriptionPageHTML } = await axios.get(url, { headers: { cookie: `session=${config.get('session')}`}});
+
+    const $ = $load(descriptionPageHTML);
+    const html = $('main > article').map((index, el) => {
+        return $(el).html();
+    }).toArray().join('\n');
+    let mdConverted = turndownService.turndown(html);
+
+    mdConverted += `\n\n----------------------
+*[Read on adventofcode.com](${url})*\n`;
+
+    const filePath = path.join(DAYS_DIR, `${day}.md`);
+    // console.log(opts);
+    await writeFile(filePath, mdConverted);
+}
+
+program.command('desc')
+    .description('Download description for specified day')
+    .option('-d, --day <number>', 'day to download')
+    .action(async (opts: any) => {
+        if (!fs.existsSync(path.resolve(__dirname, '..', 'desc'))) {
+            fs.mkdirSync(path.resolve(__dirname, '..', 'desc'));
+        }
+        if (!fs.existsSync(path.resolve(__dirname, '..', 'desc', ''+year))) {
+            fs.mkdirSync(path.resolve(__dirname, '..', 'desc', ''+year));
+        }
+
+        let days: number[] = [...range([1, 26])];
+        if ('day' in opts) {
+            days = [+opts.day];
+        }
+        let proms: Promise<void>[] = [];
+        for (let d of days) {
+            proms.push(downloadDesc(d));
+        }
+        await Promise.all(proms);
         process.exit(0);
     });
 

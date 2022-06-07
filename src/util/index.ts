@@ -45,5 +45,26 @@ export function zip<T>(...arrays: T[][]): T[][] {
     });
 }
 
+export function range(startStop: number | [number, number], step: number = 1): Iterable<number> {
+    var start = 0;
+    var stop = 0;
+    if (Array.isArray(startStop)) {
+        start = startStop[0];
+        stop = startStop[1];
+    } else {
+        stop = startStop;
+    }
+
+    const iter: Iterable<number> = {
+        [Symbol.iterator]: function* () {
+            for (var i = start; i < stop; i += step) {
+                yield i;
+            }
+        }
+    };
+
+    return iter;
+}
+
 export type Tuple<T, N extends number> = N extends N ? number extends N ? T[] : _TupleOf<T, N, []> : never;
 type _TupleOf<T, N extends number, R extends unknown[]> = R['length'] extends N ? R : _TupleOf<T, N, [T, ...R]>;
