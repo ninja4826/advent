@@ -1,5 +1,6 @@
 export * from './logger';
 export * from './intcode';
+export * from './py';
 
 export function matcher(str: string, _reg: RegExp | string): RealRegExpMatchArray {
     let reg: RegExp;
@@ -37,33 +38,6 @@ export function progBar(name: string, total: number): any {
     b1.start(total, 0);
 
     return b1;
-}
-
-export function zip<T>(...arrays: T[][]): T[][] {
-    return arrays[0].map(function(_, i) {
-        return arrays.map(function(array){return array[i]});
-    });
-}
-
-export function range(startStop: number | [number, number], step: number = 1): Iterable<number> {
-    var start = 0;
-    var stop = 0;
-    if (Array.isArray(startStop)) {
-        start = startStop[0];
-        stop = startStop[1];
-    } else {
-        stop = startStop;
-    }
-
-    const iter: Iterable<number> = {
-        [Symbol.iterator]: function* () {
-            for (var i = start; i < stop; i += step) {
-                yield i;
-            }
-        }
-    };
-
-    return iter;
 }
 
 export type Tuple<T, N extends number> = N extends N ? number extends N ? T[] : _TupleOf<T, N, []> : never;

@@ -232,7 +232,7 @@ program.command('ans')
             logger.success(`Part ${opts.part} completed!`);
             if (opts.part == '1') {
                 // execSync('gulp desc');
-                downloadDesc(opts.day);
+                await downloadDesc(opts.day);
             }
         } else {
             logger.fail(`Part ${opts.part} failed :(`);
@@ -262,6 +262,7 @@ async function downloadDesc(day: number): Promise<void> {
     const filePath = path.join(DAYS_DIR, `${day}.md`);
     // console.log(opts);
     await writeFile(filePath, mdConverted);
+    return;
 }
 
 program.command('desc')
