@@ -49,21 +49,21 @@ function watch() {
     }
 }
 
-function descDL() {
-    return new Promise((res, rej) => {
-        let year = config.get('year');
-        let session = config.get('session');
-        fs.mkdirSync(`./desc/${year}`);
-        execSync(`npx advent-cli --year ${year} --session ${session} ./desc/${year}`);
-        res();
-    })
-    .then(del('desc/**/input.txt'));
-}
+// function descDL() {
+//     return new Promise((res, rej) => {
+//         let year = config.get('year');
+//         let session = config.get('session');
+//         fs.mkdirSync(`./desc/${year}`);
+//         execSync(`npx advent-cli --year ${year} --session ${session} ./desc/${year}`);
+//         res();
+//     })
+//     .then(del('desc/**/input.txt'));
+// }
 
-function cleanDesc() {
-    let year = config.get('year');
-    return del(`desc/${year}`);
-}
+// function cleanDesc() {
+//     let year = config.get('year');
+//     return del(`desc/${year}`);
+// }
 
 function watchRun() {
     return gulp.watch('src/**/*.ts', gulp.series(build, () => {
@@ -77,7 +77,7 @@ var bd = gulp.series(build);
 exports.build = build;
 exports.runner = runner;
 exports.watch = watch;
-exports.desc = gulp.series(cleanDesc, descDL);
-exports.cleanDesc = cleanDesc;
+// exports.desc = gulp.series(cleanDesc, descDL);
+// exports.cleanDesc = cleanDesc;
 
 exports.default = bd;
