@@ -9,6 +9,7 @@ import { logger, range } from './util';
 import path from 'path';
 import { load as $load } from 'cheerio';
 import axios from 'axios';
+const c = require('ansi-colors');
 
 const TurndownService = require('turndown');
 
@@ -247,8 +248,10 @@ async function downloadDesc(day: number): Promise<void> {
     const turndownService = new TurndownService();
     
     const url = `${BASE_URL}/${YEAR}/day/${day}`;
+
+    const headerObj = { headers: { cookie: `session=${config.get('session')}`}};
     
-    const { data: descriptionPageHTML } = await axios.get(url, { headers: { cookie: `session=${config.get('session')}`}});
+    const { data: descriptionPageHTML } = await axios.get(url, headerObj);
 
     const $ = $load(descriptionPageHTML);
     const html = $('main > article').map((index, el) => {
@@ -288,5 +291,52 @@ program.command('desc')
         process.exit(0);
     });
 
+program.command('prog')
+    .description('blah')
+    .action(async (opts: any) => {
+        const BASE_URL = 'https://adventofcode.com';
+        const YEAR = config.get('year');
+        
+        const url = `${BASE_URL}/${YEAR}`;
+
+        const headerObj = { headers: { cookie: `session=${config.get('session')}`}};
+
+        const { data: daysPageHTML } = await axios.get(url, headerObj);
+
+        const $ = $load(daysPageHTML);
+
+        const $days = $('main > pre.calendar > a');
+        const starArr: [number, number][] = [];
+        $days.map((i, el) => {
+            // return el.attribs['aria-label'];
+            const day = +(<RegExpExecArray>/calendar-day(\d+)/.exec(el.attribs.class))[1];
+            const comp = /calendar-(\w+)omplete/.exec(el.attribs.class);
+
+            let stars = 0;
+            if (comp !== null) {
+                stars += 1;
+                if (comp[1] == 'veryc') {
+                    stars += 1;
+                }
+            }
+
+            starArr.push([day, stars]);
+        });
+        starArr.sort((a, b) => a[0] - b[0]);
+
+        for (let i of range(25, 5)) {
+            let str = starArr.slice(i, i + 5).map(s => {
+                let str1 = s[0].toString().padStart(2, ' ');
+
+                if (s[1] == 0) return c.white(str1);
+                if (s[1] == 1) return c.italic.yellow(str1);
+                if (s[1] == 2) return c.bold.green(str1);
+            }).join(' ');
+            console.log(str);
+        }
+
+        // console.log(starArr);
+        process.exit(0);
+    });
 program.parse();
 // process.exit();
