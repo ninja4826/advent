@@ -23,6 +23,18 @@ export function matcher(str: string, _reg: RegExp | string): RealRegExpMatchArra
     return <RealRegExpMatchArray>match;
 }
 
+export function chunk<T>(a: T[], n: number): Iterable<T[]> {
+    const iter: Iterable<T[]> = {
+        [Symbol.iterator]: function* () {
+            for (var i = 0; i < a.length; i += n) {
+                yield a.slice(i, i + n);
+            }
+        }
+    };
+
+    return iter;
+}
+
 export interface RealRegExpMatchArray extends RegExpMatchArray {
     groups: { [key: string]: string };
 }

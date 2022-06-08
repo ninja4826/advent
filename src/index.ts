@@ -338,5 +338,20 @@ program.command('prog')
         // console.log(starArr);
         process.exit(0);
     });
+
+program.command('py')
+    .description('Run Python script for day')
+    .requiredOption('-d, --day <number>', 'day to run')
+    .action(async (opts: any) => {
+        let fName = path.resolve('src', ''+year, opts.day+'.py');
+        if (!fs.existsSync(fName)) {
+            logger.log(c.red(`${fName} does not exist.`));
+            process.exit(0);
+        }
+
+        execSync('python '+path.relative(path.resolve('.'), fName), { stdio: 'inherit' });
+        process.exit(0);
+    })
+
 program.parse();
 // process.exit();
