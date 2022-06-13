@@ -76,7 +76,7 @@ program.command('run')
                     if (!Array.isArray(script.testData.part2)) {
                         script.testData.part2 = [script.testData.part2];
                     }
-                    if (script.testData.part2 == ['']) {
+                    if (script.testData.part2.toString() == [''].toString()) {
                         script.testData.part2 = script.testData.part1;
                     }
 
