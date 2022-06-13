@@ -18,8 +18,8 @@ const testData = {
 };
 
 const testAnswers = {
-    part1: 0,
-    part2: 0
+    part1: [0],
+    part2: [0]
 };
 
 export { transform, testData, testAnswers };

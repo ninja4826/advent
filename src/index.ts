@@ -90,25 +90,51 @@ program.command('run')
                 data = data.map(d => transforms.lines(d));
             }
 
-            var answer: any;
+            var answer: string | number;
 
             if (func.constructor.name === 'AsyncFunction') {
-                for (let d of data) {
+                // for (let d of data) {
+                for (let i = 0; i < data.length; i++) {
+                    const d = data[i];
                     if (remote) {
                         logger.disable();
                     }
                     answer = await func(d);
                     logger.enable();
-                    logger.success('Answer:', answer);
+                    if (!remote && 'testAnswers' in script && 
+                            'part'+pNum in script.testAnswers &&
+                            i < script.testAnswers['part'+pNum].length) {
+                        if (answer == script.testAnswers['part'+pNum][i]) {
+                            logger.success('Answer:', c.green(answer));
+                        } else {
+                            logger.fail('Answer:', c.red(answer));
+                        }
+                    } else {
+                        logger.log('Answer:', c.yellow(answer));
+                    }
+                    // logger.success('Answer:', answer);
                 }
             } else {
-                for (let d of data) {
+                // for (let d of data) {
+                for (let i = 0; i < data.length; i++) {
+                    const d = data[i];
                     if (remote) {
                         logger.disable();
                     }
                     answer = func(d);
                     logger.enable();
-                    logger.success('Answer:', answer);
+                    if (!remote && 'testAnswers' in script && 
+                            'part'+pNum in script.testAnswers &&
+                            i < script.testAnswers['part'+pNum].length) {
+                        if (answer == script.testAnswers['part'+pNum][i]) {
+                            logger.success('Answer:', c.green(answer));
+                        } else {
+                            logger.fail('Answer:', c.red(answer));
+                        }
+                    } else {
+                        logger.log('Answer:', c.yellow(answer));
+                    }
+                    // logger.success('Answer:', answer);
                 }
             }
             
