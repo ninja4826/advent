@@ -42,3 +42,32 @@ export function enumerate<T>(collection: T[], start: number = 0): Iterable<[numb
     };
     return iter;
 }
+
+export function pySlice<T>(coll: T[], start: number = 0, end: number = -1, step: number = 1): T[] {
+    if (end === -1) {
+        end = coll.length;
+    }
+    let ret: T[] = [];
+    for (let i = start; i < end; i += step) {
+        ret.push(coll[i]);
+    }
+
+    return ret;
+}
+
+export function roll<T>(coll: T[], num: number = 1): T[] {
+    coll = coll.slice(0);
+    if (num > 0) {
+        num = num % coll.length;
+        let orig = coll.slice(coll.length - num);
+        return orig.concat(coll.splice(0, coll.length - num));
+        // coll.push(...coll.splice(0, coll.length - num));
+    } else if (num < 0) {
+        num = Math.abs(num);
+        num = num % coll.length;
+        let orig = coll.slice(num);
+        return orig.concat(coll.splice(0, num));
+        // coll.push(...coll.splice(0, num));
+    }
+    return coll;
+}

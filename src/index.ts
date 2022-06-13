@@ -73,11 +73,22 @@ program.command('run')
                     if (!Array.isArray(script.testData.part1)) {
                         script.testData.part1 = [script.testData.part1];
                     }
-                    if (script.testData.part2 == '') {
-                        script.testData.part2 = script.testData.part1;
-                    }
                     if (!Array.isArray(script.testData.part2)) {
                         script.testData.part2 = [script.testData.part2];
+                    }
+                    if (script.testData.part2 == ['']) {
+                        script.testData.part2 = script.testData.part1;
+                    }
+
+                    if (!Array.isArray(script.testAnswers.part1)) {
+                        script.testAnswers.part1 = [script.testAnswers.part1];
+                    }
+                    if (!Array.isArray(script.testAnswers.part2)) {
+                        script.testAnswers.part2 = [script.testAnswers.part2];
+                    }
+
+                    if (script.testAnswers.part2.toString() === [0].toString()) {
+                        script.testAnswers.part2 = script.testAnswers.part1;
                     }
                     data = script.testData['part'+pNum];
                 } else {
