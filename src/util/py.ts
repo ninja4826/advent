@@ -1,7 +1,17 @@
 export function zip<T>(...arrays: T[][]): T[][] {
-    return arrays[0].map(function(_, i) {
-        return arrays.map(function(array){return array[i]});
-    });
+    let lengths = arrays.map(a => a.length);
+    let shortest = Math.min(...lengths);
+
+    let ret: T[][] = [];
+
+    for (let i = 0; i < shortest; i++) {
+        ret.push(arrays.map(a => a[i]));
+    }
+
+    return ret;
+    // return arrays[0].map(function(_, i) {
+    //     return arrays.map(function(array){return array[i]});
+    // });
 }
 
 export function range(startStop: number | [number, number], step: number = 1): Iterable<number> {
