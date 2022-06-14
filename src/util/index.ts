@@ -35,6 +35,14 @@ export function chunk<T>(a: T[], n: number): Iterable<T[]> {
     return iter;
 }
 
+export function factorial(n: number): number {
+    let rVal = 1;
+    for (let i = 2; i <= n; i++) {
+        rVal = rVal * i;
+    }
+    return rVal;
+}
+
 export interface RealRegExpMatchArray extends RegExpMatchArray {
     groups: { [key: string]: string };
 }

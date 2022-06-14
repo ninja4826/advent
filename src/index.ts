@@ -388,7 +388,31 @@ program.command('py')
 
         execSync('python '+path.relative(path.resolve('.'), fName), { stdio: 'inherit' });
         process.exit(0);
-    })
+    });
+
+program.command('ghdl')
+    .description('Download GitHub file')
+    .requiredOption('-u, --user <string>', 'user')
+    .requiredOption('-r, --repo <string>', 'repo')
+    .requiredOption('-p, --path <string>', 'path')
+    .action(async (opts: any) => {
+        let url = `https://raw.githubusercontent.com/${opts.user}/${opts.repo}/master/${opts.path}`;
+        
+        // npm start -- ghdl -u narimiran -r advent_of_code_2016 -p python/day_22.py
+        
+        const ghContent = require('github-content');
+
+        const gc = new ghContent({
+            owner: opts.user,
+            repo: opts.repo,
+            branch: 'master'
+        });
+
+        gc.file(opts.path, (err: any, file: any) => {
+            if (err) throw err;
+            console.log(file.contents);
+        })
+    });
 
 program.parse();
 // process.exit();
