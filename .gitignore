@@ -112,3 +112,5 @@ package-lock.json
 src/*/inputs/
 
 desc/*
+
+.ans.json
