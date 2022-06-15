@@ -1,7 +1,10 @@
+import { _makeDomArray } from 'cheerio/lib/api/manipulation';
+
 export * from './logger';
 export * from './intcode';
 export * from './py';
 export * from './linked_list';
+export * from './permutator';
 
 export function matcher(str: string, _reg: RegExp | string): RealRegExpMatchArray {
     let reg: RegExp;
@@ -42,25 +45,6 @@ export function factorial(n: number): number {
     }
     return rVal;
 }
-
-export function permutator<T>(arr: T[]): T[][] {
-    let result: T[][] = [];
-
-    const permute = (_arr: T[], m: T[]) => {
-        if (_arr.length === 0) {
-            result.push(m);
-        } else {
-            for (let i = 0; i < _arr.length; i++) {
-                let curr = _arr.slice();
-                let next = curr.splice(i, 1);
-                permute(curr.slice(), m.concat(next));
-            }
-        }
-    };
-    permute(arr, []);
-    return result;
-}
-
 export interface RealRegExpMatchArray extends RegExpMatchArray {
     groups: { [key: string]: string };
 }
