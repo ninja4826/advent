@@ -11,7 +11,7 @@ export function part2(input: number): number | string {
 
 function solve(target: number, limit: number): number {
     let houses: number[] = new Array(target).fill(1);
-
+    
     for (let i of range([2, target])) {
         for (let j of range(Math.min(Math.floor(target / i), limit))) {
             houses[i * j] += i;
