@@ -1,7 +1,10 @@
+export type FilterFunc<T> = (perm: T[], i: number) => boolean;
+
 export interface PermOpts<T> {
     start?: T[];
     repeat?: boolean;
     maxLen?: number;
+    filter?: FilterFunc<T>
 }
 
 export function* permutator<T>(arr: T[], opts: PermOpts<T>): Generator<T[], void, undefined> {
@@ -28,12 +31,18 @@ export function* permutator<T>(arr: T[], opts: PermOpts<T>): Generator<T[], void
         }
     }
 
+    if (opts.filter === undefined) {
+        opts.filter = (): boolean => true;
+    }
+
+    let counter = 0;
+
     let startArr: number[] = data.map(d => arr.indexOf(d));
 
     let len = arr.length;
     if (size === len && !opts.repeat && (!opts.start || opts.start.length == 0)) {
         // console.log('running heaps...');
-        return yield* heapsAlg(arr);
+        return yield* heapsAlg(arr, <FilterFunc<T>>opts.filter);
     }
 
     let indicesUsed: boolean[] = [];
@@ -44,7 +53,12 @@ export function* permutator<T>(arr: T[], opts: PermOpts<T>): Generator<T[], void
                 firstRun = false;
                 return;
             }
-            return yield data.slice();
+            if ((<FilterFunc<T>>opts.filter)(data.slice(), counter)) {
+                counter++;
+                return yield data.slice();
+            } else {
+                return;
+            }
         }
 
         let start = 0;
@@ -67,11 +81,19 @@ export function* permutator<T>(arr: T[], opts: PermOpts<T>): Generator<T[], void
     yield* permutationUtil(0);
 }
 
-function* heapsAlg<T>(arr: T[]): Generator<T[], void, undefined> {
+function* heapsAlg<T>(arr: T[], filterCb: FilterFunc<T>): Generator<T[], void, undefined> {
     let size = arr.length;
-
+    let counter = 0;
     const heapsUtil = function*(index: number): Generator<T[], void, undefined> {
-        if (index === size) return yield arr.slice();
+        // if (index === size) return yield arr.slice();
+        if (index === size) {
+            if (filterCb(arr.slice(), counter)) {
+                counter++;
+                return yield arr.slice();
+            } else {
+                return;
+            }
+        }
 
         const swap = (_arr: T[], i: number, j: number): T[] => {
             let len = _arr.length;
