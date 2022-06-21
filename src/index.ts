@@ -15,6 +15,7 @@ const TurndownService = require('turndown');
 
 const stat = util.promisify(fs.stat);
 const writeFile = util.promisify(fs.writeFile);
+const readdir = util.promisify(fs.readdir);
 
 type Result = number | string;
 type PartFn = (input: any) => Result;
@@ -355,49 +356,60 @@ async function main() {
         });
 
     program.command('prog')
-        .description('blah')
+        .description('Get progress')
+        .option('-a, --all', 'get progress of each year')
         .action(async (opts: any) => {
-            const BASE_URL = 'https://adventofcode.com';
-            const YEAR = config.get('year');
-            
-            const url = `${BASE_URL}/${YEAR}`;
+            let years = [config.get('year')];
 
-            const headerObj = { headers: { cookie: `session=${config.get('session')}`}};
-
-            const { data: daysPageHTML } = await axios.get(url, headerObj);
-
-            const $ = $load(daysPageHTML);
-
-            const $days = $('main > pre.calendar > a');
-            const starArr: [number, number][] = [];
-            $days.map((i, el) => {
-                // return el.attribs['aria-label'];
-                const day = +(<RegExpExecArray>/calendar-day(\d+)/.exec(el.attribs.class))[1];
-                const comp = /calendar-(\w+)omplete/.exec(el.attribs.class);
-
-                let stars = 0;
-                if (comp !== null) {
-                    stars += 1;
-                    if (comp[1] == 'veryc') {
-                        stars += 1;
-                    }
-                }
-
-                starArr.push([day, stars]);
-            });
-            starArr.sort((a, b) => a[0] - b[0]);
-
-            for (let i of range(25, 5)) {
-                let str = starArr.slice(i, i + 5).map(s => {
-                    let str1 = s[0].toString().padStart(2, ' ');
-
-                    if (s[1] == 0) return c.white(str1);
-                    if (s[1] == 1) return c.italic.yellow(str1);
-                    if (s[1] == 2) return c.bold.green(str1);
-                }).join(' ');
-                console.log(str);
+            if (opts.all) {
+                years = await readdir(path.resolve(__dirname, '..', 'src'));
+                years = years.filter(y => !isNaN(Number(y)));
             }
 
+            for (let YEAR of years) {
+                const BASE_URL = 'https://adventofcode.com';
+                // const YEAR = config.get('year');
+                
+                const url = `${BASE_URL}/${YEAR}`;
+
+                const headerObj = { headers: { cookie: `session=${config.get('session')}`}};
+
+                const { data: daysPageHTML } = await axios.get(url, headerObj);
+
+                const $ = $load(daysPageHTML);
+
+                const $days = $('main > pre.calendar > a');
+                const starArr: [number, number][] = [];
+                $days.map((i, el) => {
+                    // return el.attribs['aria-label'];
+                    const day = +(<RegExpExecArray>/calendar-day(\d+)/.exec(el.attribs.class))[1];
+                    const comp = /calendar-(\w+)omplete/.exec(el.attribs.class);
+
+                    let stars = 0;
+                    if (comp !== null) {
+                        stars += 1;
+                        if (comp[1] == 'veryc') {
+                            stars += 1;
+                        }
+                    }
+
+                    starArr.push([day, stars]);
+                });
+                starArr.sort((a, b) => a[0] - b[0]);
+
+                console.log(c.bold.white(`---- ${YEAR} ----`));
+                for (let i of range(25, 5)) {
+                    let str = starArr.slice(i, i + 5).map(s => {
+                        let str1 = s[0].toString().padStart(2, ' ');
+
+                        if (s[1] == 0) return c.white(str1);
+                        if (s[1] == 1) return c.italic.yellow(str1);
+                        if (s[1] == 2) return c.bold.green(str1);
+                    }).join(' ');
+                    console.log(str);
+                }
+                console.log('');
+            }
             // console.log(starArr);
             // process.exit(0);
         });
