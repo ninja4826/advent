@@ -343,7 +343,7 @@ async function main() {
                 fs.mkdirSync(path.resolve(__dirname, '..', 'desc', ''+year));
             }
 
-            let days: number[] = [...range([1, 26])];
+            let days: number[] = [...range(1, 26)];
             if ('day' in opts) {
                 days = [+opts.day];
             }

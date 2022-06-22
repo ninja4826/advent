@@ -14,19 +14,36 @@ export function zip<T>(...arrays: T[][]): T[][] {
     // });
 }
 
-export function range(startStop: number | [number, number], step: number = 1): Iterable<number> {
-    var start = 0;
-    var stop = 0;
-    if (Array.isArray(startStop)) {
-        start = startStop[0];
-        stop = startStop[1];
-    } else {
-        stop = startStop;
+export interface RangeOpts {
+    step?: number;
+}
+
+// export function range(startStop: number | [number, number], step: number = 1): Iterable<number> {
+    export function range(start: number, stop?: number, opts?: RangeOpts): Iterable<number> {
+    // var start = 0;
+    // var stop = 0;
+    // if (Array.isArray(startStop)) {
+    //     start = startStop[0];
+    //     stop = startStop[1];
+    // } else {
+    //     stop = startStop;
+    // }
+
+    if (stop === undefined) {
+        stop = start;
+        start = 0;
     }
+
+    const DefaultRangeOpts: RangeOpts = {
+        step: 1
+    };
+
+    opts = {...DefaultRangeOpts, ...opts};
+    let step = opts.step;
 
     const iter: Iterable<number> = {
         [Symbol.iterator]: function* () {
-            for (var i = start; i < stop; i += step) {
+            for (var i = start; i < <number>stop; i += <number>step) {
                 yield i;
             }
         }

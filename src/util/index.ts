@@ -1,5 +1,3 @@
-import { _makeDomArray } from 'cheerio/lib/api/manipulation';
-
 export * from './logger';
 export * from './intcode';
 export * from './py';
